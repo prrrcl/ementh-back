@@ -18,6 +18,9 @@ const classSchema = new Schema({
   },
   date:{
     type: Date
+  },
+  info: {
+    type: String
   }
 }, {
   timestamps: true

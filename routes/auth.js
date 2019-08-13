@@ -7,6 +7,7 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 
 const User = require('../models/User');
+const sendContactMail = require('../helpers/nodemailer')
 
 const {
   isLoggedIn,
@@ -23,9 +24,9 @@ router.post(
   isNotLoggedIn(),
   validationLoggin(),
   async (req, res, next) => {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
     try {
-      const user = await User.findOne({ username });
+      const user = await User.findOne({ email });
       if (!user) {
         next(createError(404));
       } else if (bcrypt.compareSync(password, user.password)) {
@@ -41,22 +42,46 @@ router.post(
 );
 
 router.post(
-  '/signup',
+  '/presignup',
+  isNotLoggedIn(),
+  async (req, res, next) =>{
+    const { email } = req.body;
+    try{
+      const user = await User.findOne({email}, 'email');
+      if(user){
+        return next(createError(422));
+      }else{
+        const token = Math.floor(Math.random()* 1000000) * 8765;
+        const newUser = await User.create({
+          token,
+          email
+        });
+        sendContactMail(newUser.email);
+        res.status(200).json(newUser);
+      }
+    }catch(err){
+      next(err)
+    }
+  }
+)
+
+router.post(
+  '/completesignup',
   isNotLoggedIn(),
   validationLoggin(),
   async (req, res, next) => {
-    const { username, password } = req.body;
-
+    const { email, password, username, token } = req.body;
     try {
-      const user = await User.findOne({ username }, 'username');
-      if (user) {
-        return next(createError(422));
+      const user = await User.findOne({ email });
+      const rest = user.createdAt.getTime() - new Date().getTime()
+      if (user.token !== token && user.email !== email && rest > 3600000) { // 3600000 es una hora
+        return next(createError(419));
       } else {
         const salt = bcrypt.genSaltSync(10);
         const hashPass = bcrypt.hashSync(password, salt);
-        const newUser = await User.create({ username, password: hashPass });
-        req.session.currentUser = newUser;
-        res.status(200).json(newUser);
+        const updatedUser = await User.findByIdAndUpdate(user._id, {$set: {password: hashPass, username}})
+        req.session.currentUser = updatedUser;
+        res.status(200).json(updatedUser);
       }
     } catch (error) {
       next(error);

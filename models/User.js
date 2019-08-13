@@ -7,12 +7,20 @@ const ObjectId = Schema.Types.ObjectId;
 const userSchema = new Schema({
   username: {
     type: String,
+    unique: true
+  },
+  email: {
+    type:String,
     required: true,
     unique: true
   },
+  token: {
+    type: Number,
+    required: true
+  }
+  ,
   password: {
     type: String,
-    required: true
   },
   friends: [{
     type: ObjectId,
@@ -21,18 +29,21 @@ const userSchema = new Schema({
   profileImg: {
     type: String,
     default: 'https://res.cloudinary.com/dsjopbxpn/image/upload/v1565555836/ementh/ementh_01-05_sqertp.jpg'
-  }
-  ,
+  },
   chats: {
     type: [{
       type: ObjectId,
       ref: 'Chat'
     }]
   },
-  classes:[{
-    type: ObjectId,
-    ref: 'BoxClass'
-  }]
+  isAdmin: {
+    type: Boolean,
+    default: false
+  },
+  isActive: {
+    type: Boolean,
+    default: false
+  }
 }, {
   timestamps: true
 });
