@@ -7,7 +7,7 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 
 const User = require('../models/User');
-const sendContactMail = require('../helpers/nodemailer')
+const {sendContactMail} = require('../helpers/nodemailer')
 
 const {
   isLoggedIn,
@@ -56,7 +56,8 @@ router.post(
           token,
           email
         });
-        sendContactMail(newUser.email);
+        console.log(newUser)
+        sendContactMail(newUser.email, newUser.token);
         res.status(200).json(newUser);
       }
     }catch(err){
@@ -79,7 +80,7 @@ router.post(
       } else {
         const salt = bcrypt.genSaltSync(10);
         const hashPass = bcrypt.hashSync(password, salt);
-        const updatedUser = await User.findByIdAndUpdate(user._id, {$set: {password: hashPass, username}})
+        const updatedUser = await User.findByIdAndUpdate(user._id, {$set: {password: hashPass, username, isActive:true}})
         req.session.currentUser = updatedUser;
         res.status(200).json(updatedUser);
       }

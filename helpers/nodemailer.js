@@ -3,15 +3,15 @@ require('dotenv').config();
 
 function sendContactMail (mail, token) {
   const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    service: "hotmail",
     auth: {
-      user: 'ementhboxmanager@gmail.com',
-      pass: process.env.MAILPASS
+      user: 'ementhboxmanager',
+      pass: 'prrrclementh'
     }
   });
 
   const mailOptions = {
-    from: 'ementhboxmanager@gmail.com',
+    from: 'hi@prrrcl.com',
     to: mail,
     subject: `Hey! Let's start train!`,
     text: '',
