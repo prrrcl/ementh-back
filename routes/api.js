@@ -26,6 +26,15 @@ router.post('/adduser', async (req, res, next) => {
   }
 })
 
+// .router.post('/classes', async(req,res,next)=>{
+//   try{
+//     const {user} = req.body;
+
+//   }catch(err){
+//     next(err)
+//   }
+// })
+
 router.get('/friends/:username', async (req, res, next) => {
   // Take all apps from database
   try {
@@ -48,6 +57,16 @@ router.post('/addclass', async (req, res, next) =>{
   }
 })
 
+router.post('/bookclass', async (req, res, next) =>{
+  try{
+    const { day, user, idClass } = req.body;
+    const pushToParticipants = await BoxClass.findByIdAndUpdate(idClass,{$and: [{$push: {participants: user}},{$set: {maxParticipants: +1}}]});
+    res.status(200).json(pushToParticipants);
+  }catch(err){
+    next(err)
+  }
+})
+
 router.post('/getcalendardates', async (req, res, next) =>{
   try{
     const dateToCompare = req.body;
@@ -59,8 +78,6 @@ router.post('/getcalendardates', async (req, res, next) =>{
       classe.newDate = (newDate === dateToCompare[0] ?  true : false);
       return classe;
     })
-    console.log(allClassesWithNewDate[0].newDate)
-    
     const classesToSend = allClassesWithNewDate.filter((classe)=>{
       return classe.newDate
     })
