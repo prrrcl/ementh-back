@@ -26,14 +26,7 @@ router.post('/adduser', async (req, res, next) => {
   }
 })
 
-// .router.post('/classes', async(req,res,next)=>{
-//   try{
-//     const {user} = req.body;
 
-//   }catch(err){
-//     next(err)
-//   }
-// })
 
 router.get('/friends/:username', async (req, res, next) => {
   // Take all apps from database
@@ -59,30 +52,60 @@ router.post('/addclass', async (req, res, next) =>{
 
 router.post('/bookclass', async (req, res, next) =>{
   try{
-    const { day, user, idClass } = req.body;
-    const pushToParticipants = await BoxClass.findByIdAndUpdate(idClass,{$and: [{$push: {participants: user}},{$set: {maxParticipants: +1}}]});
+    const { user, classe } = req.body;
+    const pushToParticipants = await BoxClass.findByIdAndUpdate(classe._id ,{$push: {participants: user._id}}, {new: true});
     res.status(200).json(pushToParticipants);
   }catch(err){
     next(err)
   }
 })
-
+router.post('/unsubclass', async (req, res, next) =>{
+  try{
+    const { userId, classeId } = req.body;
+    const clase = await BoxClass.findByIdAndUpdate(classeId, { $pull: { participants: userId } }, { new: true });
+    res.status(200).json(clase);
+  }catch(err){
+    next(err)
+  }
+})
+router.post('/getuserclasses', async(req,res,next)=>{
+  try{
+    const {user, day} = req.body;
+    console.log('>>>>>>>>>>>>>>\n',user,'\n',day)
+  }catch(err){
+    next(err)
+  }
+})
 router.post('/getcalendardates', async (req, res, next) =>{
   try{
-    const dateToCompare = req.body;
+    const {day, user} = req.body;
+
+    //////////////////////////////
     const allClasses = await BoxClass.find();
     const allClassesWithNewDate = allClasses.map((classe)=>{
-    const newDate = classe.date.toLocaleDateString().split('-').reduce((a,b) =>{
-        return b + a;
-      });
-      classe.newDate = (newDate === dateToCompare[0] ?  true : false);
+      const newDate = classe.date.toLocaleDateString().split('-').reduce((a,b) =>{
+          return b + a;
+        });
+      classe.newDate = (newDate === day[0] ?  true : false);
       return classe;
     })
     const classesToSend = allClassesWithNewDate.filter((classe)=>{
       return classe.newDate
     })
+    //////////////////////////////
 
-    res.status(200).json(classesToSend)
+    const allMyClasses = classesToSend.map((classe) => {
+      console.log(classe.participants.includes(user))
+        if(classe.participants.includes(user)){
+          console.log(' AM I !!!! ---------------------')
+          const newClass = classe.toJSON()
+          newClass.amI = true;
+          console.log(">>> >>>\n", newClass)
+          return newClass;
+        }
+        return classe;
+    });
+    res.status(200).json(allMyClasses)
   }catch(err){
     next(err)
   }
