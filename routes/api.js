@@ -26,8 +26,6 @@ router.post('/adduser', async (req, res, next) => {
   }
 })
 
-
-
 router.get('/friends/:username', async (req, res, next) => {
   // Take all apps from database
   try {
@@ -39,16 +37,35 @@ router.get('/friends/:username', async (req, res, next) => {
     next(err);
   }
 });
-
 router.post('/addclass', async (req, res, next) =>{
-  try{
-    const { typeOfClass, maxParticipants, date } = req.body;
-    const newClass = await BoxClass.create({typeOfClass,maxParticipants,date});
-    res.status(200).json(newClass);
-  }catch(err){
-    next(err)
-  }
-})
+    const {dateofclass} = req.body.typeOfClass;
+    const addedDate = new Date(dateofclass)
+    let latency = 30 * 60000;
+    const allClases = await BoxClass.find();
+    
+    let checkedDates = allClases.find((box)=>{
+      let boxDate = new Date(box.date)
+       if(boxDate.getTime() > addedDate.getTime()){
+          return boxDate.getTime() - addedDate.getTime() < latency
+       } else {
+          return addedDate.getTime() - boxDate.getTime() < latency
+       }
+      })
+
+    if(!checkedDates){
+          try{
+            const { typeOfClass, maxParticipants, dateofclass } = req.body.typeOfClass;
+            const newClass = await BoxClass.create({typeOfClass,maxParticipants,date: dateofclass});
+            res.status(200).json(newClass);
+          }catch(err){
+            next(err)
+          }
+        }else{
+          return res.status(405).json({error: 'La clase ya existe.'})
+        }
+    
+  })
+
 
 router.post('/bookclass', async (req, res, next) =>{
   try{
@@ -70,8 +87,20 @@ router.post('/unsubclass', async (req, res, next) =>{
 })
 router.post('/getuserclasses', async(req,res,next)=>{
   try{
-    const {user, day} = req.body;
-    console.log('>>>>>>>>>>>>>>\n',user,'\n',day)
+    const {user} = req.body;
+    const allClasses = await BoxClass.find();
+    const allClassesWithAmI = allClasses.map((clase)=>{
+      const newClass = clase.toJSON()
+      newClass.participants.forEach((id) => {
+        if(id.equals(user)){
+          newClass.amI = true;
+        }
+      })
+      return newClass
+    })
+    //////////////////////////////
+    res.status(200).json(allClassesWithAmI)
+
   }catch(err){
     next(err)
   }
@@ -81,7 +110,7 @@ router.post('/getcalendardates', async (req, res, next) =>{
     const {day, user} = req.body;
 
     //////////////////////////////
-    const allClasses = await BoxClass.find();
+    const allClasses = await BoxClass.find().populate('participants');
     const allClassesWithNewDate = allClasses.map((classe)=>{
       const newDate = classe.date.toLocaleDateString().split('-').reduce((a,b) =>{
           return b + a;
@@ -95,15 +124,13 @@ router.post('/getcalendardates', async (req, res, next) =>{
     //////////////////////////////
 
     const allMyClasses = classesToSend.map((classe) => {
-      console.log(classe.participants.includes(user))
-        if(classe.participants.includes(user)){
-          console.log(' AM I !!!! ---------------------')
-          const newClass = classe.toJSON()
-          newClass.amI = true;
-          console.log(">>> >>>\n", newClass)
-          return newClass;
+      const classeJson = classe.toJSON();
+      const participantsArr = classe.participants.map((participant)=>{
+        if(participant._id == user){
+          classeJson.AmI = true;
         }
-        return classe;
+      })
+      return classeJson;
     });
     res.status(200).json(allMyClasses)
   }catch(err){

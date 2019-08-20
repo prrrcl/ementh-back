@@ -43,20 +43,21 @@ router.post(
 
 router.post(
   '/presignup',
-  isNotLoggedIn(),
+  isLoggedIn(),
   async (req, res, next) =>{
-    const { email } = req.body;
+    const  {email} = req.body;
     try{
-      const user = await User.findOne({email}, 'email');
+      const user = await User.findOne({email});
       if(user){
-        return next(createError(422));
+        const otherToken = Math.floor(Math.random()* 1000000) * 876578432;
+        const newTokenForUser = await User.findByIdAndUpdate(user._id, {$set:{token:otherToken}})
+        res.status(209).json(newTokenForUser);
       }else{
-        const token = Math.floor(Math.random()* 1000000) * 8765;
+        const token = Math.floor(Math.random()* 1000000) * 876578432;
         const newUser = await User.create({
           token,
           email
         });
-        console.log(newUser)
         sendContactMail(newUser.email, newUser.token);
         res.status(200).json(newUser);
       }
@@ -74,7 +75,7 @@ router.post(
     const { email, password, username, token } = req.body;
     try {
       const user = await User.findOne({ email });
-      const rest = user.createdAt.getTime() - new Date().getTime()
+      const rest = user.updatedAt.getTime() - new Date().getTime()
       if (user.token !== token && user.email !== email && rest > 3600000) { // 3600000 es una hora
         return next(createError(419));
       } else {
