@@ -129,13 +129,12 @@ router.post('/getcalendardates', async (req, res, next) =>{
     //////////////////////////////
 
     const allMyClasses = classesToSend.map((classe) => {
-      const classeJson = classe.toJSON();
       const participantsArr = classe.participants.map((participant)=>{
         if(participant._id == user){
-          classeJson.AmI = true;
+          classe.AmI = true;
         }
       })
-      return classeJson;
+      return classe;
     });
     console.log('Array to show', allMyClasses)
     res.status(200).json(allMyClasses)
