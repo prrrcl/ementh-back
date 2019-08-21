@@ -115,17 +115,19 @@ router.post('/getcalendardates', async (req, res, next) =>{
     const allClasses = await BoxClass.find().populate('participants');
     const allClassesWithNewDate = allClasses.map((classe)=>{
       const newDate = classe.date.toLocaleDateString().split('/').reverse();
+      const newNewDate = [newDate[1],newDate[2],newDate[0]];
+      const dat = newNewDate.reduce((a,b)=> b+a)
       console.log(newDate)
       // const newDate = classe.date.toLocaleDateString().split('/').reverse().reduce((a,b) =>{
       //     return b + a;
       //   });
       const classeInJson = classe.toJSON();
-      console.log(newDate, day[0])
-      classeInJson.newDate = (newDate === day[0] ?  true : false);
+      console.log(dat, day[0])
+      classeInJson.dat = (dat === day[0] ?  true : false);
       return classeInJson;
     })
     const classesToSend = allClassesWithNewDate.filter((classe)=>{
-      return classe.newDate
+      return classe.dat
     })
     //////////////////////////////
 
