@@ -14,7 +14,8 @@ const chatSchema = new Schema({
   messages: [{
     type: ObjectId,
     ref: 'Message'
-  }]
+  }],
+  sala: String
 }, {
   timestamps: true
 });
