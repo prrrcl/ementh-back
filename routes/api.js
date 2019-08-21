@@ -116,7 +116,7 @@ router.post('/getcalendardates', async (req, res, next) =>{
     const allClassesWithNewDate = allClasses.map((classe)=>{
       const newDate = classe.date.toLocaleDateString().split('/').reverse();
       const newNewDate = [newDate[1],newDate[2],newDate[0]];
-      const dat = newNewDate.reduce((a,b)=> b+a)
+      const dat = newNewDate.reduce((a,b)=> a+b)
       console.log(newDate)
       // const newDate = classe.date.toLocaleDateString().split('/').reverse().reduce((a,b) =>{
       //     return b + a;
