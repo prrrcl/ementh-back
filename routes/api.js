@@ -114,8 +114,8 @@ router.post('/getcalendardates', async (req, res, next) =>{
     //////////////////////////////
     const allClasses = await BoxClass.find().populate('participants');
     const allClassesWithNewDate = allClasses.map((classe)=>{
-      const newDate = classe.date.toLocaleDateString().split('/').reduce((a,b) =>{
-          return a + b;
+      const newDate = classe.date.toLocaleDateString().split('/').reverse().reduce((a,b) =>{
+          return b + a;
         });
       const classeInJson = classe.toJSON();
       console.log(newDate, day[0])
