@@ -46,7 +46,11 @@ const userSchema = new Schema({
   benchmarks: [{
     type: ObjectId,
     ref: 'Benchmark'
-  }]
+  }],
+  invitedby: {
+    type: ObjectId,
+    ref: 'User'
+  }
 }, {
   timestamps: true
 });

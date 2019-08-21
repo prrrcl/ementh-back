@@ -90,7 +90,16 @@ router.post(
     }
   }
 );
-
+router.get('/user/:id', isLoggedIn(), async (req,res,next)=>{
+  try{
+    const {id} = req.params;
+    const user = await User.findById(id);
+    res.status(200).json(user)
+  }
+  catch(err){
+    next(err)
+  }
+})
 router.post('/logout', isLoggedIn(), (req, res, next) => {
   req.session.destroy();
   return res.status(204).send();
