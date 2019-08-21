@@ -42,7 +42,11 @@ const userSchema = new Schema({
   isActive: {
     type: Boolean,
     default: false
-  }
+  },
+  benchmarks: [{
+    type: ObjectId,
+    ref: 'Benchmark'
+  }]
 }, {
   timestamps: true
 });

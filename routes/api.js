@@ -3,6 +3,8 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const Benchmark = require('../models/Benchmark');
+const Mark = require('../models/Mark');
 const BoxClass = require('../models/BoxClass');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
@@ -138,6 +140,77 @@ router.post('/getcalendardates', async (req, res, next) =>{
   }
 })
 
+router.get('/user/:id', async (req, res, next) =>{
+  try{
+    const { id } = req.params;
+    const user = await User.findById(id);
+    res.status(200).json(user);
+  }catch(err){
+    next(err)
+  }
+})
+router.post('/createbench', async (req, res, next) => {
+  try{
+    const {name} = req.body;
+    const newbench = await Benchmark.create({
+      name
+    })
+    res.status(200).json(newbench)
+  }catch(err){
+    next(err)
+  }
+})
+router.post('/addbenchmark', async (req,res,next)=> {
+  try{
+    const {user, bench } = req.body;
+
+    // const intoUser = await User.findByIdAndUpdate(user, {$set: {$push:{benchmarks: bench}}})s
+  }
+  catch (err){
+    next(err)
+  }
+})
+router.get('/benchmarks', async (req,res,next)=>{
+  try{
+    const benchs = await Benchmark.find();
+    res.status(200).json(benchs)
+  }catch(err){
+    next(err)
+  }
+})
+router.get('/getmarks/:idusuario/:idbench', async (req, res, next)=>{
+  try{
+    const {idusuario,idbench} = req.params;
+    const bench = await Benchmark.findById(idbench).populate({
+      path: 'marks'
+    })
+    const marks = bench.marks.filter((mark)=>{
+      return mark.user == idusuario
+    })
+    res.status(200).json(marks);
+  }catch(err){
+    next(err)
+  }
+})
+
+router.post('/addmark', async (req,res, next)=>{
+  const idbench = req.body.idbench;
+  const {values} = req.body;
+  const user = req.session.currentUser._id
+  try{
+    const {date, weight,reps} = values;
+    const newMark = await Mark.create({
+      date,
+      weight,
+      reps,
+      user
+    })
+    const newMarkOnBench = await Benchmark.findByIdAndUpdate(idbench, {$push:{marks:newMark._id}},{new:true})
+    res.status(200).json(newMarkOnBench)
+  }catch(err){
+
+  }
+})
 // router.post('/apps/new', async (req, res, next) => {
 //   // Create new app
 //   try {
