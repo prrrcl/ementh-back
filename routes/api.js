@@ -118,14 +118,13 @@ router.post('/getcalendardates', async (req, res, next) =>{
           return b + a;
         });
       const classeInJson = classe.toJSON();
+      console.log(newDate, day[0])
       classeInJson.newDate = (newDate === day[0] ?  true : false);
       return classeInJson;
     })
-    console.log(allClassesWithNewDate)
     const classesToSend = allClassesWithNewDate.filter((classe)=>{
       return classe.newDate
     })
-    console.log(classesToSend)
     //////////////////////////////
 
     const allMyClasses = classesToSend.map((classe) => {
