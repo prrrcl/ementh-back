@@ -45,7 +45,7 @@ router.post(
   '/presignup',
   isLoggedIn(),
   async (req, res, next) =>{
-    const  {email} = req.body;
+    const  {email,owner} = req.body;
     try{
       const user = await User.findOne({email});
       if(user){
@@ -56,8 +56,11 @@ router.post(
         const token = Math.floor(Math.random()* 1000000) * 876578432;
         const newUser = await User.create({
           token,
-          email
+          email,
+          friends:[owner],
+          invitedby: owner
         });
+        await User.findByIdAndUpdate(owner, {$push:{friends: newUser._id}})
         sendContactMail(newUser.email, newUser.token);
         res.status(200).json(newUser);
       }
@@ -93,7 +96,9 @@ router.post(
 router.get('/user/:id', isLoggedIn(), async (req,res,next)=>{
   try{
     const {id} = req.params;
-    const user = await User.findById(id);
+    const user = await User.findById(id).populate({
+      path: 'friends'
+    });
     res.status(200).json(user)
   }
   catch(err){

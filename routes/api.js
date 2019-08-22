@@ -8,8 +8,13 @@ const Mark = require('../models/Mark');
 const BoxClass = require('../models/BoxClass');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
+const {
+  isLoggedIn,
+  isNotLoggedIn,
+  validationLoggin
+} = require('../helpers/middlewares');
 
-router.post('/adduser', async (req, res, next) => {
+router.post('/adduser', isLoggedIn(), async (req, res, next) => {
   try{
     const { username, password } = req.body;
     const checkUser = await User.find({username});
@@ -28,7 +33,7 @@ router.post('/adduser', async (req, res, next) => {
   }
 })
 
-router.get('/friends/:username', async (req, res, next) => {
+router.get('/friends/:username', isLoggedIn(), async (req, res, next) => {
   // Take all apps from database
   try {
     const currentUser = req.params.username;
@@ -39,7 +44,7 @@ router.get('/friends/:username', async (req, res, next) => {
     next(err);
   }
 });
-router.post('/addclass', async (req, res, next) =>{
+router.post('/addclass', isLoggedIn(), async (req, res, next) =>{
     const {dateofclass} = req.body.typeOfClass;
     const addedDate = new Date(dateofclass)
     let latency = 30 * 60000;
@@ -69,7 +74,7 @@ router.post('/addclass', async (req, res, next) =>{
   })
 
 
-router.post('/bookclass', async (req, res, next) =>{
+router.post('/bookclass', isLoggedIn(), async (req, res, next) =>{
   try{
     const { user, classe } = req.body;
     const pushToParticipants = await BoxClass.findByIdAndUpdate(classe._id ,{$push: {participants: user._id}}, {new: true});
@@ -78,7 +83,7 @@ router.post('/bookclass', async (req, res, next) =>{
     next(err)
   }
 })
-router.post('/unsubclass', async (req, res, next) =>{
+router.post('/unsubclass', isLoggedIn(), async (req, res, next) =>{
   try{
     const { userId, classeId } = req.body;
     const clase = await BoxClass.findByIdAndUpdate(classeId, { $pull: { participants: userId } }, { new: true });
@@ -87,7 +92,7 @@ router.post('/unsubclass', async (req, res, next) =>{
     next(err)
   }
 })
-router.post('/getuserclasses', async(req,res,next)=>{
+router.post('/getuserclasses', isLoggedIn(), async(req,res,next)=>{
   try{
     const {user} = req.body;
     const allClasses = await BoxClass.find();
@@ -107,7 +112,7 @@ router.post('/getuserclasses', async(req,res,next)=>{
     next(err)
   }
 })
-router.post('/getcalendardates', async (req, res, next) =>{
+router.post('/getcalendardates', isLoggedIn(), async (req, res, next) =>{
   try{
     const {day, user} = req.body;
 
@@ -146,16 +151,16 @@ router.post('/getcalendardates', async (req, res, next) =>{
   }
 })
 
-router.get('/user/:id', async (req, res, next) =>{
+router.get('/user/:id', isLoggedIn(), async (req, res, next) =>{
   try{
     const { id } = req.params;
-    const user = await User.findById(id);
+    const user = await User.findById(id).populate('friends');
     res.status(200).json(user);
   }catch(err){
     next(err)
   }
 })
-router.post('/createbench', async (req, res, next) => {
+router.post('/createbench', isLoggedIn(), async (req, res, next) => {
   try{
     const {name} = req.body;
     const newbench = await Benchmark.create({
@@ -166,7 +171,7 @@ router.post('/createbench', async (req, res, next) => {
     next(err)
   }
 })
-router.post('/addbenchmark', async (req,res,next)=> {
+router.post('/addbenchmark', isLoggedIn(), async (req,res,next)=> {
   try{
     const {user, bench } = req.body;
 
@@ -176,7 +181,7 @@ router.post('/addbenchmark', async (req,res,next)=> {
     next(err)
   }
 })
-router.get('/benchmarks', async (req,res,next)=>{
+router.get('/benchmarks', isLoggedIn(), async (req,res,next)=>{
   try{
     const benchs = await Benchmark.find();
     res.status(200).json(benchs)
@@ -184,7 +189,7 @@ router.get('/benchmarks', async (req,res,next)=>{
     next(err)
   }
 })
-router.get('/getmarks/:idusuario/:idbench', async (req, res, next)=>{
+router.get('/getmarks/:idusuario/:idbench', isLoggedIn(), async (req, res, next)=>{
   try{
     const {idusuario,idbench} = req.params;
     const bench = await Benchmark.findById(idbench).populate({
@@ -199,7 +204,7 @@ router.get('/getmarks/:idusuario/:idbench', async (req, res, next)=>{
   }
 })
 
-router.post('/addmark', async (req,res, next)=>{
+router.post('/addmark', isLoggedIn(), async (req,res, next)=>{
   const idbench = req.body.idbench;
   const {values} = req.body;
   const user = req.session.currentUser._id
@@ -217,34 +222,4 @@ router.post('/addmark', async (req,res, next)=>{
 
   }
 })
-// router.post('/apps/new', async (req, res, next) => {
-//   // Create new app
-//   try {
-//     const newApp = req.body;
-//     const appCreated = await App.create(newApp);
-//     res.status(200).json(appCreated);
-//   } catch (err) {
-//     next(err);
-//   }
-// });
-
-// router.put('/apps/:id/update', async (req, res, next) => {
-//   // update app by id
-//   const { id } = req.params;
-//   const appUpdated = req.body;
-//   try {
-//     const updated = await App.findByIdAndUpdate(id, appUpdated, { new: true });
-//     res.status(200).json(updated);
-//   } catch (err) {
-//     next(err);
-//   }
-// });
-
-// router.delete('/apps/:id/delete', async (req, res, next) => {
-//   // delete app by id
-//   const { id } = req.params;
-//   const appDeleted = await App.findByIdAndDelete(id);
-//   res.json(appDeleted);
-// })
-// ;
 module.exports = router;

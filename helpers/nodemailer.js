@@ -18,7 +18,7 @@ function sendContactMail (mail, token) {
     html: `
       <p>Hi!</p>
       <p>You are invited to our Box! Click there for get full acces:</p>
-      <p><a href="http://localhost:3000/completesignup/${token}/${mail}">AQUí</a></p>`
+      <p><a href="http://ementh.firebaseapp.com/completesignup/${token}/${mail}">AQUí</a></p>`
   };
 
   transporter.sendMail(mailOptions, (error, info) => {
